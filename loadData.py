@@ -5,6 +5,8 @@ import os
 import cv2
 import itertools
 imageSize = (256,256)
+def init(imageArray):
+    globals()['imageArray'] = np.frombuffer(imageArray, dtype = int).reshape((numFiles, imageSize[0], imageSize[1], 3))
 def loadData():
     dir = "ArchitectureDataset/arcDataset"
     numProcesses = 4
@@ -12,24 +14,52 @@ def loadData():
     listDirectories = [[x[0] + "/"+  file for file in x[2]] for x in os.walk(dir)][1:]
     listDirectories = list(itertools.chain.from_iterable(listDirectories))
 
-    
+    global numFiles
     numFiles = len(listDirectories)
-    
-    if __name__ == '__main__':
-        imageArray = Array('u', np.zeros(shape = (numFiles, imageSize[0], imageSize[1], 3)))
-        iter = ((i, listDirectories[i], imageArray) for i in range(numFiles))
-        with Pool() as pool: 
-            pool.map_async(loadFile, iterable = iter)
-            pool.close()
-            pool.join()
-        imageTensor = np.array(imageArray, dtype = np.uint8)
-        return imageTensor
-    return
+    imageTensor = None
+    if __name__ == "__main__":
+        print("inside")
+        #print("imageSize[0]: ", imageSize[0])
+        imageArray = Array('i', np.zeros(numFiles*imageSize[0]*imageSize[0]*3), lock = False)
+        
+        print("after image array")
+        iter = [(i, listDirectories[i]) for i in range(numFiles)]
+        #print(iter)
+        print('after iter")')
+        pool =  Pool(processes = numProcesses, initializer = init, initargs = (imageArray,))
+        print(imageArray)
+        print("in pool")
+        pool.starmap(loadFile,  iter)
+        print('after map")')
+        
+        imageArray = np.frombuffer(imageArray, dtype = int).reshape((numFiles, imageSize[0], imageSize[1], 3))
+        
+        imageTensor = np.stack(listArray, axis=0)
+    if imageTensor is None:
+        print("was none")
+    return imageTensor
+   
 
-def loadFile(fileNum, file_path, imageArray):
+
+def loadFile(fileNum, file_path):
+    global imageArray
+   #print(fileNum)
+    #print(file_path)
+    #fileNum = fileNumPath[0]
+    #file_path = fileNumPath[1]
+    #print("in function")
     im = cv2.imread(file_path)
     imResized = cv2.resize(im, imageSize)
+    #print(imResized)
+    #print("im resized shape: ", imResized.shape)
+    #print("file num: ", fileNum)
+    assert(fileNum< numFiles)
+    print("image array here: ", imageArray)
+    
     imageArray[fileNum] = imResized
+    print("done")
+   
+    return 
 
 def loadFiles(n, numProcesses, numIterations, listDirectories):
     listImageTensors = []
@@ -54,5 +84,4 @@ def loadFilesFromDirectory(dir, listFiles):
     assert(imageTensor.shape == (numImages, imageSize[0], imageSize[1], 3))
     return imageTensor
 
-
-print(loadData())
+print("image tensor: ", loadData())
