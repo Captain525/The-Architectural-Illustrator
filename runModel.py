@@ -1,15 +1,6 @@
 import tensorflow as tf
 from GAN import GAN
-from PIL import Image
-from multiprocessing import Process
-import numpy as np
-import os
-def loadData():
-    dir = "ArchitectureDataset"
-    listDirectories = np.array([(x[0], x[2]) for x in os.walk(dir)], dtype = "str")
-    print(listDirectories)
-    #if __name__ == '__main__':
-        #p = Process(target = )
+
 
 def runModel():
     learningRate = .0002
@@ -27,4 +18,3 @@ def runModel():
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
 
     model.fit()
-loadData()
