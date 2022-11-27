@@ -30,7 +30,8 @@ def runModel(images, sketches):
     learningRate = .0002
     b1 = .5
     b2 = .999
-    optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
+    #is giving half the learning rate the same as dividing the objective by 2? 
+    optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate/2, beta_1 = b1, beta_2 = b2)
     optimizerGen = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     
     batchSize = 6
@@ -40,5 +41,9 @@ def runModel(images, sketches):
     model = GAN()
 
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
-    model.summary()
+    #model.build(input_shape = [(None, 256, 256, 3), (None, 256, 256, 1)])
+    #model.summary()
+    #model.test_step((trainImages[0:10], trainSketches[0:10]))
+    print("ready to train")
     model.fit(trainImages, trainSketches, batch_size = batchSize, epochs = epochs, validation_data = (testImages, testSketches))
+

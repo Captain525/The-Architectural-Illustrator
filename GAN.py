@@ -4,7 +4,7 @@ from Discriminator import Discriminator
 class GAN(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.generator = Generator(.001)
+        self.generator = Generator(.0001)
         self.discriminator = Discriminator()
 
         self.dLoss = tf.keras.metrics.Mean(name = "dLoss")
@@ -34,6 +34,7 @@ class GAN(tf.keras.Model):
         return dataVal, pred
     #@tf.function
     def train_step(self, data):
+        print("starting train step")
         X = data[0]
         Y = data[1]
         batchSize = X.shape[0]
@@ -62,8 +63,25 @@ class GAN(tf.keras.Model):
         self.generator.optimizer.apply_gradients(zip(genGrad, self.generator.trainable_variables))
 
         metricDict = self.evalMetrics()
-
+        print("finished train step")
         return  metricDict
+    @tf.function
+    def test_step(self, data):
+        X = data[0]
+        Y = data[1]
+        batchSize = X.shape[0]
+        predLabels, genLabels= self.generateLabels(X)
+        dataCombined, pred = self(data, True)
+        print("finished test step call")
+        generated = dataCombined[batchSize:]
+        predGen = pred[batchSize:]
+        discriminatorLoss = self.discriminator.compute_loss(dataCombined, predLabels, pred)
+        self.dLoss.update_state(discriminatorLoss)
+        generatorLoss = self.generator.compute_loss(generated, genLabels, predGen)
+        self.gLoss.update_state(generatorLoss)
+        print("finished test step")
+        return self.evalMetrics()
+
     def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis):
         super().compile()
         self.generator.compile(optimizerGen, lossFxnGen)
