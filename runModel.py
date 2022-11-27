@@ -9,11 +9,11 @@ def split(images, sketches):
     indices = np.random.permutation(numImages)
     mixedImages = img_as_float(images[indices])
     mixedSketches = img_as_float(sketches[indices])
-    trainImages = images[:numTrain]
-    trainSketches = sketches[:numTrain]
+    trainImages = mixedImages[:numTrain]
+    trainSketches = mixedSketches[:numTrain]
 
-    testImages = images[numTrain:]
-    testSketches = sketches[numTrain:]
+    testImages = mixedImages[numTrain:]
+    testSketches = mixedSketches[numTrain:]
     return trainImages, trainSketches, testImages, testSketches
 
 
@@ -37,4 +37,3 @@ def runModel(images, sketches):
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
 
     model.fit(trainImages, trainSketches, batch_size = batchSize, epochs = epochs, validation_data = (testImages, testSketches))
-    
