@@ -1,11 +1,11 @@
 import tensorflow as tf
-class ConvBlock(tf.keras.Layer):
+class ConvBlock(tf.keras.layers.Layer):
     def __init__(self, numFilters, BN, Dropout):
         super().__init__()
         self.kernel_size = (4,4)
         self.BN = BN
         self.Dropout = Dropout
-        self.stride = (2,2)
+        self.stride= (2,2)
         self.numFilters = numFilters
 
         #WHICH PADDING TO USE?????
@@ -16,9 +16,11 @@ class ConvBlock(tf.keras.Layer):
         self.relu = tf.keras.layers.LeakyReLU(.2)
 
     def call(self, input):
+        
         batchSize, height, width, numChannels = input.shape
         convOutput = self.conv(input)
         newHeight, newWidth = self.calcShape(height, width)
+       
         assert(convOutput.shape == (batchSize, newHeight, newWidth, self.numFilters))
         if(self.BN):
             convOutput = self.batchNorm(convOutput)
@@ -32,7 +34,7 @@ class ConvBlock(tf.keras.Layer):
         Calculates the shape of the output of this layer given the input shape. 
         """
         fh, fw = self.kernel_size            ## filter height & width
-        sh, sw = self.strides                ## filter stride
+        sh, sw = self.stride       ## filter stride
         # Cleaning padding input.
         ry = height%sh
         rx = width %sw
@@ -50,14 +52,26 @@ class ConvBlock(tf.keras.Layer):
         return outputHeight, outputWidth
 class ConvTBlock(ConvBlock):
     def __init__(self, numFilters, BN, Dropout):
-        super().__init__(self, numFilters, BN, Dropout)
+        super().__init__(numFilters, BN, Dropout)
         #only one thing renamed. 
         #PADDING SAME OR NOT????
         #don't know which shape specifically we want. 
         self.outputPadding=  (0,0)
 
-        self.conv = tf.keras.layers.Conv2DTranspose(numFilters, self.kernel_size, self.stride, padding = self.padding, output_padding =self.outputPadding, kernel_initializer = "glorot_normal")
-
+        self.conv = tf.keras.layers.Conv2DTranspose(numFilters, self.kernel_size, self.stride, padding = self.padding,  kernel_initializer = "glorot_normal")
+    def call(self, input):
+        
+        batchSize, height, width, numChannels = input.shape
+        convOutput = self.conv(input)
+        newHeight, newWidth = self.calcShape(height, width)
+       
+        assert(convOutput.shape == (batchSize, newHeight, newWidth, self.numFilters))
+        if(self.BN):
+            convOutput = self.batchNorm(convOutput)
+        if(self.Dropout):
+            convOutput = self.dropout(convOutput)
+        activated = self.relu(convOutput)
+        return activated
     def calcShape(self, height, width):
         """
         Calculates shape of layer output in this case, it's different than the ConvBlock class. 

@@ -2,6 +2,11 @@ import tensorflow as tf
 from GAN import GAN
 import numpy as np
 from skimage.util import img_as_float
+import matplotlib.pyplot as plt
+def showImages(images):
+    for image in images:
+        plt.imshow(image)
+        plt.show()
 def split(images, sketches):
     percentTrain = .8
     numImages = images.shape[0]
@@ -21,7 +26,7 @@ def split(images, sketches):
 def runModel(images, sketches):
     #maybe use a faster library method for this instead. 
     trainImages, trainSketches, testImages, testSketches = split(images, sketches)
-    
+    #showImages(trainSketches[0:10])
     learningRate = .0002
     b1 = .5
     b2 = .999
@@ -30,10 +35,10 @@ def runModel(images, sketches):
     
     batchSize = 6
     epochs = 1
-    lossFxn = tf.keras.losses.BinaryCrosssentropy()
+    lossFxn = tf.keras.losses.BinaryCrossentropy()
 
     model = GAN()
 
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
-
+    model.summary()
     model.fit(trainImages, trainSketches, batch_size = batchSize, epochs = epochs, validation_data = (testImages, testSketches))

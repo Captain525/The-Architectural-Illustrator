@@ -3,6 +3,10 @@ import cv2
 from skimage.util import img_as_float
 from multiprocessing import Array, RawArray, Pool
 import ctypes
+
+def outlineAlgorithm(sketch):
+    """Goal: given an edge detected image, find the outline of that sketch. """
+    return
 def createSketch(images):
     """
     numpy array of images, size numImages, imageheight, imageWidth, numChannels. 
@@ -15,8 +19,9 @@ def createSketch(images):
     listEdges = []
     for i in range(numImages):
         img = images[i]
-        
-        edges = cv2.Canny(img, threshold1 = 100, threshold2 = 200, L2gradient = True, apertureSize = 3)[..., np.newaxis]
+        minVal = 150
+        maxVal = 250
+        edges = cv2.Canny(img, threshold1 = minVal, threshold2 = maxVal, L2gradient = True, apertureSize = 3)[..., np.newaxis]
         #EDGES IS 2D, REMOVES CHANNEL DIMENSION
         #does it have the same number of channels? 
         assert(edges.shape[0:2] == img.shape[0:2])

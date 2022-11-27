@@ -4,7 +4,7 @@ from Discriminator import Discriminator
 class GAN(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.generator = Generator()
+        self.generator = Generator(.001)
         self.discriminator = Discriminator()
 
         self.dLoss = tf.keras.metrics.Mean(name = "dLoss")
@@ -14,26 +14,33 @@ class GAN(tf.keras.Model):
     def call(self, data, training):
         X = data[0]
         Y = data[1]
+        batchSize, height, width = Y.shape[0:3]
+        generated = self.generator(Y, training)
+        if X is None:
+            #call from generator. 
+            dataVal = generated
+        else:
+            #call from discrminator. 
+            depth = X.shape[3]
+            assert(generated.shape == (batchSize, height, width, depth))
         
-        batchSize, height, width, depth = X.shape
-        assert(Y.shape[0] == batchSize)
-        generated= self.generator(Y, training)
-        assert(generated.shape == (batchSize, height, width, depth))
-        
-        #generator output shape: batchSize x generatedImageSiz
-        data = tf.concat([X, generated], axis=0)
+            #generator output shape: batchSize x generatedImageSiz
+            dataVal = tf.concat([X, generated], axis=0)
+            #need to append Y to both X and generated, so need to double its size. MAKE SURE THIS LINES UP. 
+            Y = tf.tile(Y, (2, 1, 1, 1))
 
-        pred = self.discriminator((data, Y), training)
-        assert(pred.shape == (data.shape[0], 1))
-        return generated, data, pred
-    @tf.function
+        pred = self.discriminator((dataVal, Y), training)
+        assert(pred.shape == (dataVal.shape[0], 1))
+        return dataVal, pred
+    #@tf.function
     def train_step(self, data):
- 
-        batchSize = data[0].shape
-        predLabels, genLabels= self.generateLabels(batchSize, batchSize)
+        X = data[0]
+        Y = data[1]
+        batchSize = X.shape[0]
+        predLabels, genLabels= self.generateLabels(X)
         with tf.GradientTape() as disTape: 
             #forward pass. 
-            generated, dataCombined, pred = self(data, True)
+            dataCombined, pred = self(data, True)
             
             discriminatorLoss = self.discriminator.compute_loss(dataCombined, predLabels, pred)
             self.dLoss.update_state(discriminatorLoss)
@@ -44,9 +51,9 @@ class GAN(tf.keras.Model):
         self.discriminator.optimizer.apply_gradients(zip(disGrad, self.discriminator.trainable_variables))
 
         with tf.GradientTape() as genTape:
-            generated, dataCombined, pred = self(data, True)
+            generated, genPredict = self((None, Y), True)
             #is there a way to make this better? 
-            genPredict = pred[batchSize:]
+            
             assert(genPredict.shape[0] == batchSize)
             generatorLoss = self.generator.compute_loss(generated, genLabels, genPredict)
             self.gLoss.update_state(generatorLoss)
@@ -62,7 +69,7 @@ class GAN(tf.keras.Model):
         self.generator.compile(optimizerGen, lossFxnGen)
         self.discriminator.compile(optimizerDis, lossFxnDis)
         #maybe add metrics here. 
-    def generateLabels(self, genShape, predShape):
+    def generateLabels(self, X):
         """
         Generate labels for the loss function. We wish to use binary cross entropy. 
 
@@ -76,11 +83,14 @@ class GAN(tf.keras.Model):
         2. The GAN paper says to maximize log(D(G(z))) because it has stronger gradients earlier in learning. 
         """
         #make them a batch of size 2*batchSize. 
-       
+        zeroBoolArr = tf.reduce_all(tf.cast(0*X, bool), axis=[1,2,3])
+        oneBoolArr = tf.logical_not(zeroBoolArr)
+        rightLabels = tf.cast(oneBoolArr, dtype=tf.int32)
+        wrongLabels = tf.cast(zeroBoolArr, dtype = tf.int32)
         #we're assumign the output is batchSize by 1. We might have to do something differently if we have 2 or more dimensions. 
-        discrimLabels = tf.concat([tf.ones(genShape), tf.zeros(predShape)], axis=0)
+        discrimLabels = tf.concat([rightLabels, wrongLabels], axis=0)
 
-        genLabels = tf.ones(genShape)
+        genLabels = rightLabels
         return discrimLabels, genLabels
     def generateImages(self, Y):
         """
@@ -89,4 +99,4 @@ class GAN(tf.keras.Model):
         generated = self.generator(Y, training = False)
         return generated
     def evalMetrics(self):
-        return {metric.n:metric.result() for metric in self.listMetrics}
+        return {metric.name:metric.result() for metric in self.listMetrics}

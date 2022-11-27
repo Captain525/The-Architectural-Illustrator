@@ -11,9 +11,7 @@ if __name__ == "__main__":
     loadTime = endLoad - startLoad
     #multiprocessing sketches is slower. 
     sketches = createSketch(imageTensor)
-    for i in range(10):
-        plt.imshow(sketches[i])
-        plt.show()
+    
     model = runModel(imageTensor, sketches)
     
     

@@ -15,14 +15,16 @@ class Generator(tf.keras.Model):
         self.regularization = tf.keras.regularizers.L1(l1 = reg_coeff)
         self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
     def call(self, data, training):
+        print("generator call")
         batchSize, height, width, numChannels = data.shape
         uNetOutput = self.UNet(data)
         assert(uNetOutput.shape == (batchSize, height, width, 128))
         generated = self.lastConvolution(uNetOutput)
-        assert(uNetOutput.shape == data.shape)
+        print("Generator output shape: ", generated.shape)
+        assert(generated.shape[0:3] == data.shape[0:3])
         return generated
 
-    def compute_loss(self, x, y, y_pred, sample_weight):
+    def compute_loss(self, x, y, y_pred, sample_weight=None):
         """
         Want binary crossentropy with L1 regularization. 
         """
