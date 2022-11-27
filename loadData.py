@@ -8,18 +8,10 @@ import time
 import ctypes
 imageSize = (256,256)
 def init(imageArray, len):
-   
     buffered = np.frombuffer(imageArray, dtype = np.uint8)
-    #print(buffered.shape, flush = True)
-    #print("len: ", len)
     size = len*imageSize[0]*imageSize[1]*3
-    #print(buffered.shape[0]/size)
     globals()['imageArray'] = buffered.reshape((len, imageSize[0], imageSize[1], 3))
     return 
-   
-        
-
-    
 def loadFile(fileNum, file_path):
     global imageArray
     im = cv2.imread(file_path)
@@ -38,10 +30,6 @@ def loadDataMultiprocessing():
     numFiles = len(listDirectories)
     firstSection = listDirectories
     
-    
-    #print("imageSize[0]: ", imageSize[0])
-    print(numFiles*imageSize[0]*imageSize[1]*3)
-    size = len(firstSection)*imageSize[0]*imageSize[1]*3
     imageArray = RawArray(ctypes.c_char, len(firstSection)*imageSize[0]*imageSize[1]*3)
 
         
@@ -75,9 +63,6 @@ def loadFileNormal(directory):
     imResized = cv2.resize(im ,imageSize)
     return imResized
 
-if __name__ == "__main__":
-    
-    imageTensor = loadDataMultiprocessing()
    
     
     
