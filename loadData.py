@@ -7,15 +7,15 @@ import itertools
 import ctypes
 imageSize = (256,256)
 def init(imageArray, len):
-    try:
-        buffered = np.frombuffer(imageArray, dtype = np.uint8)
-        print(buffered.shape, flush = True)
-        
-        globals()['imageArray'] = buffered.reshape((len, imageSize[0], imageSize[1], 3))
-        exit()
-    except:
-        print("error")
-        exit()
+   
+    buffered = np.frombuffer(imageArray, dtype = np.uint8)
+    #print(buffered.shape, flush = True)
+    #print("len: ", len)
+    size = len*imageSize[0]*imageSize[1]*3
+    #print(buffered.shape[0]/size)
+    globals()['imageArray'] = buffered.reshape((len, imageSize[0], imageSize[1], 3))
+    return 
+   
         
 
     
@@ -31,8 +31,8 @@ def loadFile(fileNum, file_path):
     #print(imResized)
     #print("im resized shape: ", imResized.shape)
     #print("file num: ", fileNum)
-    assert(fileNum< numFiles)
-    print("image array here: ", imageArray, flush = True)
+    
+    print("got imageArray", flush =True)
     
     imageArray[fileNum] = imResized
     print("done", flush=True)
@@ -58,7 +58,7 @@ def loadDataMultiprocessing():
         imageArray = RawArray(ctypes.c_char_p,len(firstSection*imageSize[0]*imageSize[1]*3))
         
         print("after image array")
-        iter = [(i, listDirectories[i]) for i in range(numFiles)]
+        iter = [(i, listDirectories[i]) for i in range(firstSection.shape)]
         #print(iter)
        # with Pool(processes = numProcesses, initializer = init, initargs = (imageArray,)) as pool:
             #print("inside pool", flush = True)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
         
     print("after image array")
-    iter = [(i, listDirectories[i]) for i in range(numFiles)]
+    iter = [(i, listDirectories[i]) for i in range(len(firstSection))]
     #print(iter)
     with Pool(processes = numProcesses, initializer = init, initargs = (imageArray, len(firstSection))) as pool:
         print("inside pool", flush = True)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     #with Pool() as pool:
         #print(pool.map(loadFile, iter))
           
-    print(np.frombuffer())
-    imageArray = np.frombuffer(imageArray, dtype = ctypes.c_char_p).reshape((len(firstSection), imageSize[0], imageSize[1], 3))
+    print("here")
+    imageArray = np.frombuffer(imageArray, dtype = np.uint8).reshape((len(firstSection), imageSize[0], imageSize[1], 3))
     print(imageArray)
     exit()
