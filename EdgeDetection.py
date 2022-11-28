@@ -19,8 +19,9 @@ def createSketch(images):
     listEdges = []
     for i in range(numImages):
         img = images[i]
-        minVal = 150
-        maxVal = 250
+        #100, 200 works very well but gets TOO much detail. 
+        minVal = 300
+        maxVal = 400
         edges = cv2.Canny(img, threshold1 = minVal, threshold2 = maxVal, L2gradient = True, apertureSize = 3)[..., np.newaxis]
         #EDGES IS 2D, REMOVES CHANNEL DIMENSION
         #does it have the same number of channels? 

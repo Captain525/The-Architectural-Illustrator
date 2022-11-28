@@ -1,7 +1,7 @@
 PAPERS: 
-Generative Adversarial Nets
-Conditional Generative Adversarial Nets
-Image-to-Image Trnaslation with conditional adversarial networks
+(1) Generative Adversarial Nets
+(2)Conditional Generative Adversarial Nets
+(3)Image-to-Image Trnaslation with conditional adversarial networks
 They did something very similar to what we didd, adn although i didn't look at it much(Specifically looked at it to see how to implement conditionality in the discriminator, as the paper didn't mention this. Turns out all you have to do is concatenate). 
 https://www.tensorflow.org/tutorials/generative/pix2pix
 

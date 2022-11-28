@@ -26,7 +26,7 @@ def split(images, sketches):
 def runModel(images, sketches):
     #maybe use a faster library method for this instead. 
     trainImages, trainSketches, testImages, testSketches = split(images, sketches)
-    #showImages(trainSketches[0:10])
+    showImages(trainSketches[0:10])
     learningRate = .0002
     b1 = .5
     b2 = .999
