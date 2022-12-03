@@ -37,11 +37,7 @@ class PatchGAN(tf.keras.layers.Layer):
         ##print("PG layer4 shape: ", layer4.shape)
         #maybe add this part to the discriminator class instead. 
         output = self.lastConvLayer(layer2)
-        print("PG layer5 shape: ", output.shape)
-        #taking the average of all the patch probabilities to get the overall probability
-        #average = tf.reduce_mean(output, axis = [-3, -2, -1])[..., tf.newaxis]
-        #assert(average.shape == (batchSize,1) )
-        #print("PG output shape: ", average.shape)
-        #output represents the probability that each 
+        print("Output shape:  ", output.shape)
+        
         return output
         

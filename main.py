@@ -1,4 +1,4 @@
-from loadData import loadDataMultiprocessing, loadData
+from loadData import loadDataMultiprocessing, loadData, splitIntoFolders, loadDatabyCategory
 from EdgeDetection import createSketch, createSketchMultiprocessing
 import numpy as np
 import time
@@ -6,10 +6,23 @@ import matplotlib.pyplot as plt
 from runModel import runModel
 if __name__ == "__main__":
     startLoad = time.time()
-    imageTensor = loadDataMultiprocessing()
+    folderLengths, imageTensor = loadDataMultiprocessing()
     endLoad = time.time()
     loadTime = endLoad - startLoad
     print("Load time: ", loadTime)
+    startSplit = time.time()
+    listFolders = splitIntoFolders(imageTensor, folderLengths)
+    endSplit = time.time()
+    splitTime = endSplit-startSplit
+    print("split time: ", splitTime)
+    
+    startOther = time.time()
+    otherWay = loadDatabyCategory()
+    endOther = time.time()
+    otherTime = endOther-startOther
+    
+    print("other time: ", otherTime)
+    print("total previous time: ", loadTime + splitTime)
     """
     loadStart = time.time()
     imageTensorCopy = loadData()

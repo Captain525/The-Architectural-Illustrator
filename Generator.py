@@ -12,15 +12,15 @@ class Generator(tf.keras.Model):
         super().__init__()
         self.UNet = UNet()
         #maybe add this to final generator layer instead. 
+        self.reg_coeff = reg_coeff
         self.regularization = tf.keras.regularizers.L1(l1 = reg_coeff)
         self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
     def call(self, data, training):
-        print("generator call")
+        
         batchSize, height, width, numChannels = data.shape
         uNetOutput = self.UNet(data)
         assert(uNetOutput.shape == (batchSize, height, width, 128))
         generated = self.lastConvolution(uNetOutput)
-        print("Generator output shape: ", generated.shape)
         assert(generated.shape[0:3] == data.shape[0:3])
         return generated
 
@@ -36,6 +36,11 @@ class Generator(tf.keras.Model):
         lossDefault = self.compiled_loss(realY, genPred, sample_weight)
 
         penalty = self.regularization(difference)
+        value = tf.reduce_sum(tf.abs(difference), axis = [1,2,3])
+        print("l1 loss value:", value)
+        print("l1 weighted: ", value*self.reg_coeff)
+        print(penalty)
+        assert(tf.experimental.numpy.isclose(penalty, value, atol = .01))
         return lossDefault + penalty
 
 

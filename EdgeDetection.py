@@ -1,12 +1,27 @@
 import numpy as np
 import cv2
 from skimage.util import img_as_float
+import tensorflow as tf
 from multiprocessing import Array, RawArray, Pool
 import ctypes
 
 def outlineAlgorithm(sketch):
     """Goal: given an edge detected image, find the outline of that sketch. """
     return
+
+def randomJitter(images):
+    """
+    Randomly jitters images, by increasing their size then cropping them. 
+
+    Not sure if for loop is fastest way to do this. 
+    """
+    resizedImages = tf.image.resize(images, size = (286,286))
+    listRandomCrop = []
+    for i in images.shape[0]:
+        randomCropping = tf.image.random_crop(resizedImages[i], (256,256))
+        listRandomCrop.append(randomCropping)
+    croppedImages = tf.stack(listRandomCrop, axis=0)
+    return croppedImages
 def createSketch(images):
     """
     numpy array of images, size numImages, imageheight, imageWidth, numChannels. 
