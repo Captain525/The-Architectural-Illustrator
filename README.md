@@ -14,10 +14,10 @@ GAN BASICS:
 
     This idea is reflected in their respective loss functions. In the original GAN paper(1): they use the binary crossentropy loss for both models. That is, they take the negative log likelihood of each possible class and sum them up. 
 
-    LD = -log(D(x)) - log(1-D(z))
-    LG = -log(D(z))
+    LD = -log(D(x)) - log(1-D(G(z)))
+    LG = -log(D(G(z)))
 
-    As you can see, for LD, D performs best with D(x) close to 1(correct on real) and D(z) close to 0, which would mean that log(D(x)) and log(1-D(z)) are close to zero (instead of negative) and taking the negative of the result means that the minimum possible loss represents the optimal values for D(x) and D(z). 
+    As you can see, for LD, D performs best with D(x) close to 1(correct on real) and D(z) close to 0, which would mean that log(D(x)) and log(1-D(z)) are close to zero (instead of negative) and taking the negative of the result means that the minimum possible loss represents the optimal values for D(x) and D(z).  
 
     For LG, it's slightly more complicated, as technically, we wish to minimize log(1-D(z)), since we want D(z) to be near 1 (signifying the generator tricked the discriminator), and thus that would mean we want the log(1-D(z)) to approach -inf. However, paper (1) mentions that early in training, D overpowers G, and the gradient of this loss function is too small to learn effectively, and the generator never improvces. So, instead of using that loss function, they instead propose to MAXIMIZE log(D(z)), essentially saying the same thing. And, that is equivalent to MINIMIZING -log(D(z)) which is where the loss function comes from. 
 
@@ -31,11 +31,12 @@ GAN BASICS:
 
         However, in our problem we want the output to depend not only on randomness, but also on the image outline we pass in. Thus, we need to use a CONDITIONAL GAN instead. Paper (2) is the paper that proposes these nets, and fortunately they are very similar to normal GANS. 
 
-        All we do in the conditional case is provide an extra input to both the generator and the discriminator, which is the condition. Thus, we take in both the condition and the randomness as input in the generator, and we take in both generated/real images as well as the condition in the discriminator. 
+        All we do in the conditional case is provide an extra input to both the generator and the discriminator, which is the condition. Thus, we take in both the condition and the randomness as input in the generator, and we take in both generated/real images as well as the condition in the discriminator. The ways to implement this vary, but often we concatenate it to the noise/input images. 
 
         However, one downside of this is that in more complicated models, the generator can learn to IGNORE the noise, and instead just use the condition. This problem is described in (3). To get around this, they implement the Dropout layers to simulate this randomness. However, they said this wasn't THAT effective, and we will attempt to find a way to remedy this. 
 
 MODEL STRUCTURE:
+    We use the structure proposed in (3) which uses a UNet architecture for the generator, and uses a PatchGAN model for the classifier. 
 
 
 

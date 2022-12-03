@@ -3,7 +3,7 @@ from PatchGAN import PatchGAN
 class Discriminator(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.patchGAN = PatchGAN(70)
+        self.patchGAN = PatchGAN(16)
 
     def call(self, inputs, training):
         """
@@ -15,3 +15,11 @@ class Discriminator(tf.keras.Model):
         concatenated = tf.concat([data, condition], axis=-1)
         return self.patchGAN(concatenated)
 
+    def compute_loss(self, X, predGen, predReal, sample_weights):
+        #all ones. 
+        realLabels = tf.cast(tf.logical_not(tf.cast(0*predReal, bool)), tf.int32)
+        genLabels = tf.cast(0*predGen, tf.int32)
+
+        realLoss = self.compiled_loss(realLabels, predReal, sample_weights)
+        genLoss = self.compiled_loss(genLabels, predGen, sample_weights)
+        return realLoss+genLoss

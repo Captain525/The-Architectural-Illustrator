@@ -20,8 +20,8 @@ def createSketch(images):
     for i in range(numImages):
         img = images[i]
         #100, 200 works very well but gets TOO much detail. 
-        minVal = 300
-        maxVal = 400
+        minVal = 100
+        maxVal = 200
         edges = cv2.Canny(img, threshold1 = minVal, threshold2 = maxVal, L2gradient = True, apertureSize = 3)[..., np.newaxis]
         #EDGES IS 2D, REMOVES CHANNEL DIMENSION
         #does it have the same number of channels? 
@@ -32,7 +32,7 @@ def createSketch(images):
     gradientImages = img_as_float(np.array(listEdges))
     assert((gradientImages<=1.0).all())
     assert((gradientImages>=0.0).all())
-    print("dtype: ", gradientImages.dtype)
+
     #might be a different number of channels. 
     assert(gradientImages.shape[0:3] == images.shape[0:3])
     return gradientImages

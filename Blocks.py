@@ -10,7 +10,8 @@ class ConvBlock(tf.keras.layers.Layer):
 
         #WHICH PADDING TO USE?????
         self.padding = "same"
-        self.conv = tf.keras.layers.Conv2D(numFilters, self.kernel_size, self.stride, padding = self.padding)
+        kernelInitializer = tf.keras.initializers.RandomNormal(mean=0, stddev = .02)
+        self.conv = tf.keras.layers.Conv2D(numFilters, self.kernel_size, self.stride, padding = self.padding, kernel_initializer = kernelInitializer)
         self.batchNorm = tf.keras.layers.BatchNormalization()
         self.dropout = tf.keras.layers.Dropout(.5)
         self.relu = tf.keras.layers.LeakyReLU(.2)
@@ -57,8 +58,8 @@ class ConvTBlock(ConvBlock):
         #PADDING SAME OR NOT????
         #don't know which shape specifically we want. 
         self.outputPadding=  (0,0)
-
-        self.conv = tf.keras.layers.Conv2DTranspose(numFilters, self.kernel_size, self.stride, padding = self.padding,  kernel_initializer = "glorot_normal")
+        kernelInitializer = tf.keras.initializers.RandomNormal(mean = 0, stddev = .02)
+        self.conv = tf.keras.layers.Conv2DTranspose(numFilters, self.kernel_size, self.stride, padding = self.padding,  kernel_initializer = kernelInitializer)
     def call(self, input):
         
         batchSize, height, width, numChannels = input.shape

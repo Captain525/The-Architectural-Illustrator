@@ -2,12 +2,14 @@ PAPERS:
 (1) Generative Adversarial Nets
 (2)Conditional Generative Adversarial Nets
 (3)Image-to-Image Trnaslation with conditional adversarial networks
+
 They did something very similar to what we didd, adn although i didn't look at it much(Specifically looked at it to see how to implement conditionality in the discriminator, as the paper didn't mention this. Turns out all you have to do is concatenate). 
 https://www.tensorflow.org/tutorials/generative/pix2pix
 
 Tensorflow Guides:
 https://www.tensorflow.org/tutorials/keras/save_and_load
 https://www.tensorflow.org/tensorboard/get_started
+Referenced this to see how to split the train step between discriminator and generator. 
 https://www.tensorflow.org/guide/keras/writing_a_training_loop_from_scratch
 https://www.tensorflow.org/tutorials/generative/pix2pix
 

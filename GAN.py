@@ -1,16 +1,17 @@
 import tensorflow as tf
 from Generator import Generator
 from Discriminator import Discriminator
+import time
+import sys
+from CustomMetrics import *
 class GAN(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.generator = Generator(.0001)
+        reg_coeff = 100
+        self.generator = Generator(reg_coeff = reg_coeff)
         self.discriminator = Discriminator()
 
-        self.dLoss = tf.keras.metrics.Mean(name = "dLoss")
-        self.gLoss = tf.keras.metrics.Mean(name = "gLoss")
-        self.sumLoss = tf.keras.metrics.Mean(name = "sumLoss")
-        self.listMetrics = [self.dLoss, self.gLoss, self.sumLoss]
+       
     def call(self, data, training):
         X = data[0]
         Y = data[1]
@@ -30,63 +31,67 @@ class GAN(tf.keras.Model):
             Y = tf.tile(Y, (2, 1, 1, 1))
 
         pred = self.discriminator((dataVal, Y), training)
-        assert(pred.shape == (dataVal.shape[0], 1))
+       
+        
         return dataVal, pred
-    #@tf.function
-    def train_step(self, data):
-        print("starting train step")
+    
+    def batch_step(self, data, training):
         X = data[0]
         Y = data[1]
         batchSize = X.shape[0]
-        predLabels, genLabels= self.generateLabels(X)
         with tf.GradientTape() as disTape: 
             #forward pass. 
-            dataCombined, pred = self(data, True)
-            
-            discriminatorLoss = self.discriminator.compute_loss(dataCombined, predLabels, pred)
-            self.dLoss.update_state(discriminatorLoss)
-        #calculate the gradients of each model's loss w.r.t the weights for each. 
-        disGrad = disTape.gradient(discriminatorLoss, self.discriminator.trainable_variables)
-        
-        #update the gradients for both the generator and the discriminator
-        self.discriminator.optimizer.apply_gradients(zip(disGrad, self.discriminator.trainable_variables))
+            dataCombined, predGen, predReal = self(data, training)
+            discrimLabels, genLabels = self.genLabelsNew(predReal, predGen)
 
+            discriminatorLoss = self.discriminator.compute_loss(dataCombined, discrimLabels, pred)
+            self.dLoss.update_state(discriminatorLoss)
+        if(training):
+            disGrad = disTape.gradient(discriminatorLoss, self.discriminator.trainable_variables)
+            self.discriminator.optimizer.apply_gradients(zip(disGrad, self.discriminator.trainable_variables))
         with tf.GradientTape() as genTape:
-            generated, genPredict = self((None, Y), True)
+            generated, genPredict = self((None, Y), training)
             #is there a way to make this better? 
             
             assert(genPredict.shape[0] == batchSize)
             generatorLoss = self.generator.compute_loss(generated, genLabels, genPredict)
             self.gLoss.update_state(generatorLoss)
-        self.sumLoss.update_state(generatorLoss + discriminatorLoss)
-        genGrad = genTape.gradient(generatorLoss, self.generator.trainable_variables)
-        self.generator.optimizer.apply_gradients(zip(genGrad, self.generator.trainable_variables))
-
-        metricDict = self.evalMetrics()
-        print("finished train step")
-        return  metricDict
-    @tf.function
-    def test_step(self, data):
-        X = data[0]
-        Y = data[1]
-        batchSize = X.shape[0]
-        predLabels, genLabels= self.generateLabels(X)
-        dataCombined, pred = self(data, True)
-        print("finished test step call")
-        generated = dataCombined[batchSize:]
-        predGen = pred[batchSize:]
-        discriminatorLoss = self.discriminator.compute_loss(dataCombined, predLabels, pred)
-        self.dLoss.update_state(discriminatorLoss)
-        generatorLoss = self.generator.compute_loss(generated, genLabels, predGen)
-        self.gLoss.update_state(generatorLoss)
-        print("finished test step")
-        return self.evalMetrics()
+        if(training):
+            genGrad = genTape.gradient(generatorLoss, self.generator.trainable_variables)
+            self.generator.optimizer.apply_gradients(zip(genGrad, self.generator.trainable_variables))
+        self.updateStates(not training, generatorLoss, discriminatorLoss)
+        return self.evalMetricsTest()
 
     def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis):
+
         super().compile()
         self.generator.compile(optimizerGen, lossFxnGen)
         self.discriminator.compile(optimizerDis, lossFxnDis)
         #maybe add metrics here. 
+        self.createMetrics()
+
+    def genLabelsNew(self, discriminatorOutput):
+        """
+        discriminator output is size 2*batchSize shape. 
+        """
+        halfShape = int(discriminatorOutput.shape[0]/2)
+        zeroBoolArr = tf.cast(0*discriminatorOutput, bool)
+        oneBoolArr = tf.logical_not(zeroBoolArr)
+        assert(discriminatorOutput.shape == zeroBoolArr.shape)
+        rightLabels = tf.cast(oneBoolArr, dtype = tf.int32)
+        wrongLabels = tf.cast(zeroBoolArr, dtype = tf.int32)
+
+        discrimLabels = tf.concat([rightLabels, wrongLabels], axis=0)
+        genLabels = rightLabels
+        return discrimLabels, genLabels
+    @tf.function
+    def train_step(self, data):
+        
+        return self.batch_step(data, True)
+    @tf.function
+    def test_step(self, data):
+        return self.batch_step(data, False)
+
     def generateLabels(self, X):
         """
         Generate labels for the loss function. We wish to use binary cross entropy. 
@@ -110,11 +115,43 @@ class GAN(tf.keras.Model):
 
         genLabels = rightLabels
         return discrimLabels, genLabels
+
     def generateImages(self, Y):
         """
         Generate some images from the conditions. 
         """
         generated = self.generator(Y, training = False)
         return generated
-    def evalMetrics(self):
-        return {metric.name:metric.result() for metric in self.listMetrics}
+    def createMetrics(self):
+        self.dLoss = tf.keras.metrics.Mean(name = "dLoss")
+        self.gLoss = tf.keras.metrics.Mean(name = "gLoss")
+        self.sumLoss = tf.keras.metrics.Mean(name = "sumLoss")
+        self.dValLoss = tf.keras.metrics.Mean(name = "valDLoss")
+        self.gValLoss = tf.keras.metrics.Mean(name = "valGLoss")
+        self.valSumLoss = tf.keras.metrics.Mean(name = "valSumLoss")
+        self.trainStepTime = TrainStepTime(name = "tTime")
+        self.testStepTime = TrainStepTime(name = "vTime")
+        self.listMetricsTrain = [self.dLoss, self.gLoss, self.sumLoss, self.trainStepTime]
+        self.listMetricsTest = [self.dValLoss, self.gValLoss, self.valSumLoss, self.testStepTime]
+        self.listMetrics = self.listMetricsTrain + self.listMetricsTest
+        return self.listMetrics
+    def updateStates(self, val, gLoss, dLoss, timeStart=None, timeStop=None):
+        if val:
+            self.dValLoss.update_state(dLoss)
+            self.gValLoss.update_state(gLoss)
+            self.valSumLoss.update_state(dLoss+gLoss)
+            if timeStart is not None and timeStop is not None:
+                self.testStepTime.update_state(timeStart, timeStop)
+        else:
+            self.dLoss.update_state(dLoss)
+            self.gLoss.update_state(gLoss)
+            self.sumLoss.update_state(dLoss + gLoss)
+            if timeStart is not None and timeStop is not None:
+                self.trainStepTime.update_state(timeStart,timeStop)
+    def resetStates(self):
+        for metric in self.listMetrics:
+            metric.reset_state()
+    def evalMetricsTest(self):
+        return {metric.name:metric.result() for metric in self.listMetricsTest}
+    def evalMetricsTrain(self):
+        return {metric.name:metric.result() for metric in self.listMetricsTrain}
