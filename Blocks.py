@@ -1,5 +1,11 @@
 import tensorflow as tf
 class ConvBlock(tf.keras.layers.Layer):
+    """
+    Defines a block used in the UNET and PatchGAN architectures. 
+    It consists of a Conv2D layer with kernel size 4 and stride 2, then followed by batchNorm, maybe dropout, then RELU. 
+
+    
+    """
     def __init__(self, numFilters, BN, Dropout):
         super().__init__()
         self.kernel_size = (4,4)

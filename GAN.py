@@ -37,7 +37,7 @@ class GAN(tf.keras.Model):
         """
         X = data[0]
         Y = data[1]
-        print("batch step eager? :",tf.executing_eagerly())
+        #print("batch step eager? :",tf.executing_eagerly())
         #calculate discriminator gradients first. 
         with tf.GradientTape() as disTape: 
             #forward pass. 
@@ -62,7 +62,7 @@ class GAN(tf.keras.Model):
             genGrad = genTape.gradient(generatorLoss, self.generator.trainable_variables)
             self.generator.optimizer.apply_gradients(zip(genGrad, self.generator.trainable_variables))
         self.updateStates(not training, generatorLoss, discriminatorLoss)
-
+        print("end of batch step")
         return self.evalMetrics(training)
 
     def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis):
@@ -93,25 +93,21 @@ class GAN(tf.keras.Model):
         self.dValLoss = tf.keras.metrics.Mean(name = "valDLoss")
         self.gValLoss = tf.keras.metrics.Mean(name = "valGLoss")
         self.valSumLoss = tf.keras.metrics.Mean(name = "valSumLoss")
-        self.trainStepTime = TrainStepTime(name = "tTime")
-        self.testStepTime = TrainStepTime(name = "vTime")
-        self.listMetricsTrain = [self.dLoss, self.gLoss, self.sumLoss, self.trainStepTime]
-        self.listMetricsTest = [self.dValLoss, self.gValLoss, self.valSumLoss, self.testStepTime]
+    
+        self.listMetricsTrain = [self.dLoss, self.gLoss, self.sumLoss]
+        self.listMetricsTest = [self.dValLoss, self.gValLoss, self.valSumLoss]
         self.listMetrics = self.listMetricsTrain + self.listMetricsTest
         return self.listMetrics
-    def updateStates(self, val, gLoss, dLoss, timeStart=None, timeStop=None):
+    def updateStates(self, val, gLoss, dLoss):
         if val:
             self.dValLoss.update_state(dLoss)
             self.gValLoss.update_state(gLoss)
             self.valSumLoss.update_state(dLoss+gLoss)
-            if timeStart is not None and timeStop is not None:
-                self.testStepTime.update_state(timeStart, timeStop)
+
         else:
             self.dLoss.update_state(dLoss)
             self.gLoss.update_state(gLoss)
             self.sumLoss.update_state(dLoss + gLoss)
-            if timeStart is not None and timeStop is not None:
-                self.trainStepTime.update_state(timeStart,timeStop)
     def resetStates(self):
         for metric in self.listMetrics:
             metric.reset_state()

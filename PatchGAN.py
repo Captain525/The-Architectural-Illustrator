@@ -21,8 +21,12 @@ class PatchGAN(tf.keras.layers.Layer):
         
         self.conv1 = ConvBlock(64, False, False)
         self.conv2 = ConvBlock(128, True, False)
+
+        """
+        #add this if want 70x70 patch gan. 
         #self.conv3 = ConvBlock(256, True, False)
         #self.conv4 = ConvBlock(512, True, False)
+        """
         kernelInitializer = tf.keras.initializers.RandomNormal(mean= 0, stddev = .02)
         #forgot a padding = same on first run
         self.lastConvLayer = tf.keras.layers.Conv2D(1, kernel_size = (4,4), strides = (2,2), padding = "same", activation = "sigmoid", kernel_initializer=kernelInitializer)
@@ -31,12 +35,16 @@ class PatchGAN(tf.keras.layers.Layer):
         layer1 = self.conv1(input)
         #print("PG layer1 shape: ", layer1.shape)
         layer2 = self.conv2(layer1)
+        """
+        #add this if want 70x70 patch gan. 
         #print("PG layer2 shape: ", layer2.shape)
         #layer3 = self.conv3(layer2)
         #print("PG layer3 shape: ", layer3.shape)
         #layer4 = self.conv4(layer3)
         ##print("PG layer4 shape: ", layer4.shape)
-        #maybe add this part to the discriminator class instead. 
+        """
+
+        #this has the shape of batchSize x numPatches x numPatches x 1 
         output = self.lastConvLayer(layer2)
         #print("Output shape:  ", output.shape)
         

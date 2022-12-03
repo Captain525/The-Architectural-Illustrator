@@ -16,15 +16,17 @@ class Discriminator(tf.keras.Model):
         return self.patchGAN(concatenated)
 
     def compute_loss(self, combined, predGen, predReal, sample_weights=None):
-        #all ones. 
-
+        """
+        Generates the labels and computes the loss. 
+        Computes the two losses separately and then sums them together. 
+        """
         #these aren't really used here. 
         generated = combined[0]
         x = combined[1]
         #generate the labels here instead of earlier before. 
         realLabels = tf.cast(tf.logical_not(tf.cast(0*predReal, bool)), tf.int32)
         genLabels = tf.cast(0*predGen, tf.int32)
-        
+
         realLoss = self.compiled_loss(realLabels, predReal, sample_weights)
         genLoss = self.compiled_loss(genLabels, predGen, sample_weights)
         return realLoss+genLoss

@@ -4,6 +4,7 @@ import numpy as np
 from skimage.util import img_as_float
 import matplotlib.pyplot as plt
 import time
+from CustomCallbacks import displayImages
 def showImages(images):
     for image in images:
         plt.imshow(image)
@@ -42,6 +43,7 @@ def runModel(images, sketches):
 
     model = GAN()
     startCompAndBuild = time.time()
+    stepsPerExecution = 1
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
     #need this for eager execution, without this it is automatically not eager. 
     #model.run_eagerly = True
@@ -56,8 +58,9 @@ def runModel(images, sketches):
     smallerTestImages = tf.constant(testImages[:500], dtype = tf.float32)
     smallerTestSketches = tf.constant(testSketches[:500], dtype = tf.float32)
     saveFreq = 10
-    modelCheckpoint = tf.keras.callbacks.ModelCheckpoint("/tmp/checkpoint", monitor = "valSumLoss",save_best_only = False,  mode = "min", save_weights_only = False, save_freq = saveFreq)
-    callbacks = [modelCheckpoint]
+    modelCheckpoint = tf.keras.callbacks.ModelCheckpoint("checkpoints/", monitor = "valSumLoss",save_best_only = False,  mode = "min", save_weights_only = True, save_freq = saveFreq)
+    callbacks = [modelCheckpoint, displayImages(smallerTrainImages, smallerTrainSketches, smallerTestImages, smallerTestSketches)]
+
     history = model.fit(smallerTrainImages, smallerTrainSketches, batch_size = batchSize, epochs = epochs, validation_data = (smallerTestImages, smallerTestSketches), callbacks = callbacks)
 
     generatedImages = model.generateImages(trainSketches[0:10])
