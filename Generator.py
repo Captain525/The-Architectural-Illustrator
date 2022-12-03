@@ -24,18 +24,16 @@ class Generator(tf.keras.Model):
         assert(generated.shape[0:3] == data.shape[0:3])
         return generated
 
-    def compute_loss(self, x, y, y_pred, sample_weight=None):
+    def compute_loss(self, combined,  genPred, genReal, sample_weight=None):
         """
         Want binary crossentropy with L1 regularization. 
         """
-        print("x shape: ", x.shape)
-        generated = x[0]
-        real = x[1]
-        print(generated.shape)
-        difference = generated-real
-        realY = tf.cast(tf.logical_not(tf.cast(0*y_pred, bool)), tf.int32)
+        generated = combined[0]
+        x = combined[1]
+        difference = generated-x
+        realY = tf.cast(tf.logical_not(tf.cast(0*genPred, bool)), tf.int32)
         #calls the loss function passed into the compiler. 
-        lossDefault = self.compiled_loss(realY, y_pred, sample_weight)
+        lossDefault = self.compiled_loss(realY, genPred, sample_weight)
 
         penalty = self.regularization(difference)
         return lossDefault + penalty

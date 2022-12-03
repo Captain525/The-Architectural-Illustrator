@@ -15,8 +15,10 @@ class Discriminator(tf.keras.Model):
         concatenated = tf.concat([data, condition], axis=-1)
         return self.patchGAN(concatenated)
 
-    def compute_loss(self, X, predGen, predReal, sample_weights):
+    def compute_loss(self, combined, predGen, predReal, sample_weights):
         #all ones. 
+        generated = combined[0]
+        x = combined[1]
         realLabels = tf.cast(tf.logical_not(tf.cast(0*predReal, bool)), tf.int32)
         genLabels = tf.cast(0*predGen, tf.int32)
 
