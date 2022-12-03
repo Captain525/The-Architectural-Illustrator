@@ -29,8 +29,8 @@ def loadDataMultiprocessing():
     numProcesses = 4
     #gets a list of ALL files in one. 
     listDirectories = [[x[0] + "/"+  file for file in x[2]] for x in os.walk(dir)][1:]
+    #this was added to allow us to split the data into lists. 
     lenLists = [len(folder) for folder in listDirectories]
-    print(len(lenLists))
     listDirectories = list(itertools.chain.from_iterable(listDirectories))
     imageArray = []
     global numFiles

@@ -11,9 +11,8 @@ class Generator(tf.keras.Model):
     def __init__(self, reg_coeff):
         super().__init__()
         self.UNet = UNet()
-        #maybe add this to final generator layer instead. 
+        #Regularization coefficient for L1 loss. 
         self.reg_coeff = reg_coeff
-        self.regularization = tf.keras.regularizers.L1(l1 = reg_coeff)
         self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
     def call(self, data, training):
         
@@ -34,13 +33,8 @@ class Generator(tf.keras.Model):
         realY = tf.cast(tf.logical_not(tf.cast(0*genPred, bool)), tf.int32)
         #calls the loss function passed into the compiler. 
         lossDefault = self.compiled_loss(realY, genPred, sample_weight)
-
-        penalty = self.regularization(difference)
-        value = tf.reduce_sum(tf.abs(difference), axis = [1,2,3])
-        print("l1 loss value:", value)
-        print("l1 weighted: ", value*self.reg_coeff)
-        print(penalty)
-        assert(tf.experimental.numpy.isclose(penalty, value, atol = .01))
-        return lossDefault + penalty
+        #penalty gets a scalar value instead of a batchSize tensor. 
+        l1 = tf.reduce_sum(tf.abs(difference), axis = [1,2,3])
+        return lossDefault + self.reg_coeff*l1
 
 

@@ -15,13 +15,15 @@ def randomJitter(images):
 
     Not sure if for loop is fastest way to do this. 
     """
+    print("images shape: ", images.shape)
     resizedImages = tf.image.resize(images, size = (286,286))
+    print("resized shape: ", resizedImages.shape)
     listRandomCrop = []
-    for i in images.shape[0]:
-        randomCropping = tf.image.random_crop(resizedImages[i], (256,256))
+    for i in range(images.shape[0]):
+        randomCropping = tf.image.random_crop(resizedImages[i], (256,256, resizedImages.shape[-1]))
         listRandomCrop.append(randomCropping)
     croppedImages = tf.stack(listRandomCrop, axis=0)
-    return croppedImages
+    return croppedImages.numpy().astype(np.uint8)
 def createSketch(images):
     """
     numpy array of images, size numImages, imageheight, imageWidth, numChannels. 

@@ -22,6 +22,7 @@ class GAN(tf.keras.Model):
         realPred = None
         #in case where you're calculating gradients of discriminator, run the real predictions. 
         if(X is not None):
+            #run discriminator on real examples. 
             realPred = self.discriminator((X, Y))
         #return generated examples, predictions of generated examples, and predictions of real examples
         return generated, genPred, realPred
@@ -36,6 +37,7 @@ class GAN(tf.keras.Model):
         """
         X = data[0]
         Y = data[1]
+        print("batch step eager? :",tf.executing_eagerly())
         #calculate discriminator gradients first. 
         with tf.GradientTape() as disTape: 
             #forward pass. 
@@ -71,10 +73,10 @@ class GAN(tf.keras.Model):
         #maybe add metrics here. 
         self.createMetrics()
 
-    #@tf.function
+    
     def train_step(self, data):
         return self.batch_step(data, True)
-    #@tf.function
+    
     def test_step(self, data):
         return self.batch_step(data, False)
 

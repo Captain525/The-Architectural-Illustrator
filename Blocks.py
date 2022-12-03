@@ -55,11 +55,10 @@ class ConvTBlock(ConvBlock):
     def __init__(self, numFilters, BN, Dropout):
         super().__init__(numFilters, BN, Dropout)
         #only one thing renamed. 
-        #PADDING SAME OR NOT????
-        #don't know which shape specifically we want. 
-        self.outputPadding=  (0,0)
+        #no output padding gets the right results. 
         kernelInitializer = tf.keras.initializers.RandomNormal(mean = 0, stddev = .02)
         self.conv = tf.keras.layers.Conv2DTranspose(numFilters, self.kernel_size, self.stride, padding = self.padding,  kernel_initializer = kernelInitializer)
+    """
     def call(self, input):
         
         batchSize, height, width, numChannels = input.shape
@@ -73,6 +72,7 @@ class ConvTBlock(ConvBlock):
             convOutput = self.dropout(convOutput)
         activated = self.relu(convOutput)
         return activated
+    """
     def calcShape(self, height, width):
         """
         Calculates shape of layer output in this case, it's different than the ConvBlock class. 
