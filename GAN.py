@@ -65,18 +65,18 @@ class GAN(tf.keras.Model):
         print("end of batch step")
         return self.evalMetrics(training)
 
-    def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis):
+    def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis, metrics = None, steps_per_execution = 1):
 
-        super().compile()
+        super().compile(steps_per_execution = steps_per_execution, metrics = metrics)
         self.generator.compile(optimizerGen, lossFxnGen)
         self.discriminator.compile(optimizerDis, lossFxnDis)
         #maybe add metrics here. 
-        self.createMetrics()
+        #self.createMetrics()
 
-    
+    @tf.function
     def train_step(self, data):
         return self.batch_step(data, True)
-    
+    @tf.function
     def test_step(self, data):
         return self.batch_step(data, False)
 

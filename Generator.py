@@ -14,12 +14,16 @@ class Generator(tf.keras.Model):
         #Regularization coefficient for L1 loss. 
         self.reg_coeff = reg_coeff
         self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
+        #range -1 to 1. 
+        self.tanh = tf.keras.activations.tanh
     def call(self, data, training):
         
         batchSize, height, width, numChannels = data.shape
         uNetOutput = self.UNet(data)
         assert(uNetOutput.shape == (batchSize, height, width, 128))
         generated = self.lastConvolution(uNetOutput)
+        #trying to put in range 0, 1
+        #generated = (self.tanh(generated) + 1)/2
         assert(generated.shape[0:3] == data.shape[0:3])
         return generated
 

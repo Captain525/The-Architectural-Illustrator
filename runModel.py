@@ -34,7 +34,7 @@ def runModel(images, sketches):
     b1 = .5
     b2 = .999
     #is giving half the learning rate the same as dividing the objective by 2? 
-    optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate/2, beta_1 = b1, beta_2 = b2)
+    optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     optimizerGen = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     
     batchSize = 4
@@ -43,8 +43,8 @@ def runModel(images, sketches):
 
     model = GAN()
     startCompAndBuild = time.time()
-    stepsPerExecution = 1
-    model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn)
+    stepsPerExecution = 5
+    model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn, metrics = model.createMetrics(), steps_per_execution = stepsPerExecution)
     #need this for eager execution, without this it is automatically not eager. 
     #model.run_eagerly = True
     model.build(input_shape = [(None, 256, 256, 3), (None, 256, 256, 1)])
@@ -58,7 +58,7 @@ def runModel(images, sketches):
     smallerTestImages = tf.constant(testImages[:500], dtype = tf.float32)
     smallerTestSketches = tf.constant(testSketches[:500], dtype = tf.float32)
     saveFreq = 10
-    modelCheckpoint = tf.keras.callbacks.ModelCheckpoint("checkpoints/", monitor = "valSumLoss",save_best_only = False,  mode = "min", save_weights_only = True, save_freq = saveFreq)
+    modelCheckpoint = tf.keras.callbacks.ModelCheckpoint("checkpoints/{epoch}weights", monitor = "sumLoss",save_best_only = True,  mode = "min", save_weights_only = True, save_freq = saveFreq)
     callbacks = [modelCheckpoint, displayImages(smallerTrainImages, smallerTrainSketches, smallerTestImages, smallerTestSketches)]
 
     history = model.fit(smallerTrainImages, smallerTrainSketches, batch_size = batchSize, epochs = epochs, validation_data = (smallerTestImages, smallerTestSketches), callbacks = callbacks)
