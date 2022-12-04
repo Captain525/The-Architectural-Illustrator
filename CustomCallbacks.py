@@ -13,6 +13,12 @@ class displayImages(tf.keras.callbacks.Callback):
         self.testEdges = testEdges
 
     def on_train_batch_end(self, batch, logs):
+        return
+       
+    def on_epoch_end(self, batch, logs):
+        self.displayImages(batch, logs)
+        return 
+    def displayImages(self, batch, logs):
         print("in callback")
         numExamples = 5
         trainImages = self.trainData[0:numExamples]
@@ -57,5 +63,3 @@ class displayImages(tf.keras.callbacks.Callback):
         plt.subplots_adjust(hspace=0, wspace = 0)
         plt.show()
         print("done callback")
-    def on_epoch_end(self, batch, logs):
-        self.on_train_batch_end(batch, logs)

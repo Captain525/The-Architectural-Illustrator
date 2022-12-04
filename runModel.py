@@ -43,7 +43,7 @@ def runModel(images, sketches):
 
     model = GAN()
     startCompAndBuild = time.time()
-    stepsPerExecution = 5
+    stepsPerExecution = 1
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn, metrics = model.createMetrics(), steps_per_execution = stepsPerExecution)
     #need this for eager execution, without this it is automatically not eager. 
     #model.run_eagerly = True
@@ -59,7 +59,7 @@ def runModel(images, sketches):
     smallerTestSketches = tf.constant(testSketches[:500], dtype = tf.float32)
     saveFreq = 10
     modelCheckpoint = tf.keras.callbacks.ModelCheckpoint("checkpoints/{epoch}weights", monitor = "sumLoss",save_best_only = True,  mode = "min", save_weights_only = True, save_freq = saveFreq)
-    callbacks = [modelCheckpoint, displayImages(smallerTrainImages, smallerTrainSketches, smallerTestImages, smallerTestSketches)]
+    callbacks = [displayImages(smallerTrainImages, smallerTrainSketches, smallerTestImages, smallerTestSketches)]
 
     history = model.fit(smallerTrainImages, smallerTrainSketches, batch_size = batchSize, epochs = epochs, validation_data = (smallerTestImages, smallerTestSketches), callbacks = callbacks)
 
