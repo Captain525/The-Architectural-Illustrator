@@ -33,6 +33,7 @@ def runModel(images, sketches):
     learningRate = .0002
     b1 = .5
     b2 = .999
+    print("pre optimizers")
     #is giving half the learning rate the same as dividing the objective by 2? 
     optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     optimizerGen = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
@@ -40,7 +41,7 @@ def runModel(images, sketches):
     batchSize = 4
     epochs = 5
     lossFxn = tf.keras.losses.BinaryCrossentropy()
-
+    print("got to gan")
     model = GAN()
     startCompAndBuild = time.time()
     stepsPerExecution = 1
