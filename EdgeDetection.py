@@ -49,7 +49,8 @@ def createSketch(images):
     gradientImages = img_as_float(np.array(listEdges))
     assert((gradientImages<=1.0).all())
     assert((gradientImages>=0.0).all())
-
+    print(gradientImages.shape)
+    print(images.shape)
     #might be a different number of channels. 
     assert(gradientImages.shape[0:3] == images.shape[0:3])
     return gradientImages
