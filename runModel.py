@@ -19,7 +19,7 @@ def split(images, sketches):
     indices = np.random.permutation(numImages)
     mixedImages = img_as_float(images[indices])
     mixedSketches = img_as_float(sketches[indices])
-    print("after imag sketches"_)
+    print("after imag sketches")
     trainImages = mixedImages[:numTrain]
     trainSketches = mixedSketches[:numTrain]
    
