@@ -15,12 +15,14 @@ def split(images, sketches):
     percentTrain = .8
     numImages = images.shape[0]
     numTrain = int(percentTrain*numImages)
+    print("before numpy random")
     indices = np.random.permutation(numImages)
     mixedImages = img_as_float(images[indices])
     mixedSketches = img_as_float(sketches[indices])
+    print("after imag sketches"_)
     trainImages = mixedImages[:numTrain]
     trainSketches = mixedSketches[:numTrain]
-
+   
     testImages = mixedImages[numTrain:]
     testSketches = mixedSketches[numTrain:]
     print("done split")
