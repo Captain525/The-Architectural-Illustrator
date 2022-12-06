@@ -12,6 +12,20 @@ def init(imageArray, len, str):
     size = len*imageSize[0]*imageSize[1]*3
     globals()[str] = buffered.reshape((len, imageSize[0], imageSize[1], 3))
     return 
+
+def renameFiles():
+    dir = "ArchitectureDataset/arcDataset"
+    
+    for directory in os.listdir(dir):
+        print("dir + directory: ", dir+directory)
+        assert(1==0)
+        listDirs = os.listdir(dir + "/" + directory)
+        for i in len(listDirs):
+            file = listDirs[i]
+            newName = directory + "image number {}".format(i)
+            os.rename(file, newName)
+    
+            
 def loadFile(fileNum, file_path):
     global imageArray
     im = cv2.imread(file_path)

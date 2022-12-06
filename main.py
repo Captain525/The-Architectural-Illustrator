@@ -1,10 +1,11 @@
-from loadData import loadDataMultiprocessing, loadData, splitIntoFolders
+from loadData import loadDataMultiprocessing, loadData, splitIntoFolders, renameFiles
 from EdgeDetection import createSketch, createSketchMultiprocessing, randomJitter
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 from runModel import runModel
 if __name__ == "__main__":
+    renameFiles()
     startLoad = time.time()
     folderLengths, imageTensor = loadDataMultiprocessing()
     endLoad = time.time()
