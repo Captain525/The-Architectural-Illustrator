@@ -27,6 +27,7 @@ def split(images, sketches):
 
 
 def runModel(images, sketches):
+    print("got to run model")
     #maybe use a faster library method for this instead. 
     trainImages, trainSketches, testImages, testSketches = split(images, sketches)
     #showImages(trainSketches[0:10])
