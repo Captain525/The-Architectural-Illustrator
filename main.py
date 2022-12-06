@@ -5,7 +5,7 @@ import time
 import matplotlib.pyplot as plt
 from runModel import runModel
 if __name__ == "__main__":
-    renameFiles()
+
     startLoad = time.time()
     folderLengths, imageTensor = loadDataMultiprocessing()
     endLoad = time.time()

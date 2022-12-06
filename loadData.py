@@ -15,15 +15,20 @@ def init(imageArray, len, str):
 
 def renameFiles():
     dir = "ArchitectureDataset/arcDataset"
-    
+    print(os.listdir(dir))
     for directory in os.listdir(dir):
+        if(not os.path.isdir(dir + "/" + directory)):    
+            continue
         print("dir + directory: ", dir+directory)
-        assert(1==0)
+        #assert(1==0)
         listDirs = os.listdir(dir + "/" + directory)
-        for i in len(listDirs):
+        print(listDirs)
+        for i in range(len(listDirs)):
+    
             file = listDirs[i]
             newName = directory + "image number {}".format(i)
-            os.rename(file, newName)
+            os.rename(dir + "/" + directory + "/" + file, dir + "/" + directory + "/" + newName)
+            print("done")
     
             
 def loadFile(fileNum, file_path):
