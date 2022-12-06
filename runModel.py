@@ -11,6 +11,7 @@ def showImages(images):
         plt.show()
 
 def split(images, sketches):
+    print("in split")
     percentTrain = .8
     numImages = images.shape[0]
     numTrain = int(percentTrain*numImages)
@@ -22,6 +23,7 @@ def split(images, sketches):
 
     testImages = mixedImages[numTrain:]
     testSketches = mixedSketches[numTrain:]
+    print("done split")
     return trainImages, trainSketches, testImages, testSketches
 
 
