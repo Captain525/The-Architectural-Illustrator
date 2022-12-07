@@ -17,7 +17,9 @@ def split(images, sketches):
     numTrain = int(percentTrain*numImages)
     print("before numpy random")
     indices = np.random.permutation(numImages)
+    print("indices")
     mixedImages = img_as_float(images[indices])
+    print("mixed images")
     mixedSketches = img_as_float(sketches[indices])
     print("after imag sketches")
     trainImages = mixedImages[:numTrain]
