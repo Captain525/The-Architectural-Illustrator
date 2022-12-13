@@ -11,25 +11,21 @@ def showImages(images):
         plt.show()
 
 def split(images, sketches):
-    print("in split")
+   
     percentTrain = .8
     numImages = images.shape[0]
     numTrain = int(percentTrain*numImages)
-    print("before numpy random")
+
     indices = np.random.permutation(numImages)
-    print("indices")
-    mixedImages = images[indices]
-    #mixedImages = img_as_float(images[indices])
-    print("mixed images")
-    mixedSketches = sketches[indices]
-    #mixedSketches = img_as_float(sketches[indices])
-    print("after imag sketches")
+    mixedImages = img_as_float(images[indices])
+    mixedSketches = img_as_float(sketches[indices])
+ 
     trainImages = mixedImages[:numTrain]
     trainSketches = mixedSketches[:numTrain]
    
     testImages = mixedImages[numTrain:]
     testSketches = mixedSketches[numTrain:]
-    print("done split")
+    
     return trainImages, trainSketches, testImages, testSketches
 
 
