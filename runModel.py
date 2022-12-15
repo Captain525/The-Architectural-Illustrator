@@ -11,44 +11,49 @@ def showImages(images):
         plt.show()
 
 def split(images, sketches):
-   
+    """
+    Splits the data. 
+    """
     percentTrain = .8
     numImages = images.shape[0]
     numTrain = int(percentTrain*numImages)
-
-    indices = np.random.permutation(numImages)
-    mixedImages = img_as_float(images[indices])
-    mixedSketches = img_as_float(sketches[indices])
+    indices = np.arange(numImages, dtype = int)
+    np.random.shuffle(indices)
+    print("indices shape: ", indices.shape)
+    images = images[indices]
+    sketches = sketches[indices]
  
-    trainImages = mixedImages[:numTrain]
-    trainSketches = mixedSketches[:numTrain]
+    trainImages = images[:numTrain]
+    trainSketches = sketches[:numTrain]
    
-    testImages = mixedImages[numTrain:]
-    testSketches = mixedSketches[numTrain:]
+    testImages = images[numTrain:]
+    testSketches = sketches[numTrain:]
     
     return trainImages, trainSketches, testImages, testSketches
 
 
 
 def runModel(images, sketches):
-    print("got to run model")
+    """
+    This method runs the model given the input images and sketches. 
+    """
     #maybe use a faster library method for this instead. 
     trainImages, trainSketches, testImages, testSketches = split(images, sketches)
-    #showImages(trainSketches[0:10])
     learningRate = .0002
     b1 = .5
     b2 = .999
-    print("pre optimizers")
     #is giving half the learning rate the same as dividing the objective by 2? 
     optimizerDis = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     optimizerGen = tf.keras.optimizers.Adam(learning_rate = learningRate, beta_1 = b1, beta_2 = b2)
     
     batchSize = 4
     epochs = 5
+    #our loss function is binary crossentropy. 
     lossFxn = tf.keras.losses.BinaryCrossentropy()
-    print("got to gan")
+
     model = GAN()
     startCompAndBuild = time.time()
+    #used to speed up execution potentially. 
     stepsPerExecution = 1
     model.compile(optimizerGen, optimizerDis, lossFxn, lossFxn, metrics = model.createMetrics(), steps_per_execution = stepsPerExecution)
     #need this for eager execution, without this it is automatically not eager. 
@@ -58,7 +63,6 @@ def runModel(images, sketches):
     compAndBuild = endCompAndBuild - startCompAndBuild
     print("comp and build time: ", compAndBuild)
     model.summary()
-    print("ready to train")
     smallerTrainImages = tf.constant(trainImages[:1000], dtype = tf.float32)
     smallerTrainSketches = tf.constant(trainSketches[:1000], dtype = tf.float32)
     smallerTestImages = tf.constant(testImages[:500], dtype = tf.float32)
@@ -69,5 +73,5 @@ def runModel(images, sketches):
 
     history = model.fit(smallerTrainImages, smallerTrainSketches, batch_size = batchSize, epochs = epochs, validation_data = (smallerTestImages, smallerTestSketches), callbacks = callbacks)
 
-    generatedImages = model.generateImages(trainSketches[0:10])
+    generatedImages = model.generateImages(testSketches[0:10])
     showImages(generatedImages)

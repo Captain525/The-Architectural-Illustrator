@@ -1,5 +1,6 @@
 import tensorflow as tf
 from UNet import UNet
+from EncDec import EncDec
 
 class Generator(tf.keras.Model):
     """
@@ -10,21 +11,32 @@ class Generator(tf.keras.Model):
     """
     def __init__(self, reg_coeff):
         super().__init__()
-        self.UNet = UNet()
+        self.U = True
+        self.l1 = True
+        if self.U:
+            self.UNet = UNet()
+        else:
+            self.Unet = EncDec()
+
         #Regularization coefficient for L1 loss. 
         self.reg_coeff = reg_coeff
-        self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
-        #range -1 to 1. 
-        self.tanh = tf.keras.activations.tanh
+        if(self.U):
+            self.lastConvolution = tf.keras.layers.Conv2D(3, (4,4), (1,1), padding = "same", activation = "tanh")
+        else:
+             self.lastConvolution = tf.keras.layers.Conv2DTranspose(3, (4,4), (2,2), padding = "same", activation = "tanh")
+        
     def call(self, data, training):
         
         batchSize, height, width, numChannels = data.shape
         uNetOutput = self.UNet(data)
-        assert(uNetOutput.shape == (batchSize, height, width, 128))
+        if self.u:
+          assert(uNetOutput.shape == (batchSize, height, width, 128))
+        else:
+          assert(uNetOutput.shape == (batchSize, int(height/2), int(width/2), 64))
+        
         generated = self.lastConvolution(uNetOutput)
-        #trying to put in range 0, 1
-        #generated = (self.tanh(generated) + 1)/2
-        assert(generated.shape[0:3] == data.shape[0:3])
+        
+        assert(generated.shape == (batchSize, height, width, 3))
         return generated
 
     def compute_loss(self, combined,  genPred, genReal, sample_weight=None):
@@ -39,6 +51,9 @@ class Generator(tf.keras.Model):
         lossDefault = self.compiled_loss(realY, genPred, sample_weight)
         #penalty gets a scalar value instead of a batchSize tensor. 
         l1 = tf.reduce_sum(tf.abs(difference), axis = [1,2,3])
-        return lossDefault + self.reg_coeff*l1
+        if(self.l1):
+            return lossDefault + self.reg_coeff*l1
+        else:
+            return lossDefault
 
 

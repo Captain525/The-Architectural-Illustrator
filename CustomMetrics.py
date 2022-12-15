@@ -1,5 +1,8 @@
 import tensorflow as tf
 class TrainStepTime(tf.keras.metrics.Metric):
+    """
+    Not used in final project, because the time wouldn't update with graph execution enabled. 
+    """
     def __init__(self, name):
         super().__init__(name)
         self.timeStart = 0

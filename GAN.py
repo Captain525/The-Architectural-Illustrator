@@ -5,6 +5,10 @@ import time
 import sys
 from CustomMetrics import *
 class GAN(tf.keras.Model):
+    """
+    This is the class for the Conditional GAN model we're training, containing a generator and a discriminator model. 
+    This defines the loss function, the train step, and how the algorithms work. 
+    """
     def __init__(self):
         super().__init__()
         reg_coeff = 100
@@ -12,7 +16,9 @@ class GAN(tf.keras.Model):
         self.discriminator = Discriminator()
 
     def call(self, data, training):
+        #real images. 
         X = data[0]
+        #conditional input
         Y = data[1]
         #generate data
         generated = self.generator(Y, training) 
@@ -34,15 +40,21 @@ class GAN(tf.keras.Model):
         X - real examples of images. 
         Y - outlines of those specific real examples. This is the conditional input. 
 
+        Do one discriminator step then one generator step. Doing one THEN the other makes it so that it converges. 
+
+
         """
+        #real images. 
         X = data[0]
+        #edges
         Y = data[1]
-        #print("batch step eager? :",tf.executing_eagerly())
         #calculate discriminator gradients first. 
         with tf.GradientTape() as disTape: 
             #forward pass. 
             generated, predGen, predReal= self(data, training)
-            discriminatorLoss = self.discriminator.compute_loss((generated, X), predGen, predReal)
+            #calculate the loss, generate the labels IN the method. 
+            discriminatorLoss = self.discriminator.compute_loss((generated, X), predGen, predReal)\
+            #update the loss state. 
             self.dLoss.update_state(discriminatorLoss)
         if(training):
             #if training, calculate gradients and update weights. 
@@ -58,20 +70,15 @@ class GAN(tf.keras.Model):
             generatorLoss = self.generator.compute_loss((generated, X), genPredict, predReal)
             self.gLoss.update_state(generatorLoss)
         if(training):
-            print("about to update gradients")
             genGrad = genTape.gradient(generatorLoss, self.generator.trainable_variables)
             self.generator.optimizer.apply_gradients(zip(genGrad, self.generator.trainable_variables))
         self.updateStates(not training, generatorLoss, discriminatorLoss)
-        print("end of batch step")
         return self.evalMetrics(training)
 
     def compile(self, optimizerGen, optimizerDis, lossFxnGen, lossFxnDis, metrics = None, steps_per_execution = 1):
-
         super().compile(steps_per_execution = steps_per_execution, metrics = metrics)
         self.generator.compile(optimizerGen, lossFxnGen)
         self.discriminator.compile(optimizerDis, lossFxnDis)
-        #maybe add metrics here. 
-        #self.createMetrics()
 
     @tf.function
     def train_step(self, data):

@@ -1,6 +1,9 @@
 import tensorflow as tf
 from Blocks import ConvBlock, ConvTBlock
 class EncDec(tf.keras.Layer):
+    """
+    Encoder Decoder Generative model. This doesn't have residual connections. 
+    """
 
     def __init__(self):
         super().__init__()

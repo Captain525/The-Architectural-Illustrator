@@ -12,9 +12,16 @@ class UNet(tf.keras.layers.Layer):
     C64-C128-C256-C512-C512-C512-C512-C512
     The decoder structure is: 
     CD512-CD1024-CD1024-C1024-C1024-C512-C256-C128
+
+    Oour smaller UNet has the structure. 
+    CD512-CD512-CD512 - C512 -C512-C256-C128-C128
+
     """
     def __init__(self):
         super().__init__()
+        #If True, UNET II, if False, UNET I
+        self.small = False
+        
         self.encblock1 = ConvBlock(64, False, False)
         self.encblock2 = ConvBlock(128, True, False)
         self.encblock3 = ConvBlock(256, True, False)
@@ -25,14 +32,17 @@ class UNet(tf.keras.layers.Layer):
         self.encblock8 = ConvBlock(512, True, False)
 
         self.decblock1 = ConvTBlock(512, True, True)
-        self.decblock2 = ConvTBlock(1024, True, True)
-        self.decblock3 = ConvTBlock(1024, True, True)
-        self.decblock4 = ConvTBlock(1024, True, False)
-        self.decblock5 = ConvTBlock(1024, True, False)
-        self.decblock6 = ConvTBlock(512, True, False)
-        self.decblock7 = ConvTBlock(256, True, False)
+        #2 if not small 1 if small. 
+        value = int(not self.small) + 1
+        #in case of big block ie UNET I, all these values are doubled. 
+        self.decblock2 = ConvTBlock(512*value, True, True)
+        self.decblock3 = ConvTBlock(512*value, True, True)
+        self.decblock4 = ConvTBlock(512*value, True, False)
+        self.decblock5 = ConvTBlock(512*value, True, False)
+        self.decblock6 = ConvTBlock(256*value, True, False)
+        self.decblock7 = ConvTBlock(128*value, True, False)
+       
         self.decblock8 = ConvTBlock(128, True, False)
-        #I think this is right. 
         
     def call(self, input):
         """

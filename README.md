@@ -40,6 +40,9 @@ MODEL STRUCTURE:
 
 
 
+HOW We RAN THE PROJECT:
+WE used google colab with the attached jupyter notebook to run the code. We used 800 images for our training, with 40 epochs. See the report for more details. 
+
 
 
 

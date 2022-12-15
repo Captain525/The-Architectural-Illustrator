@@ -6,6 +6,10 @@ import cv2
 import itertools
 import time
 import ctypes
+"""
+Methods to load the data from the folder. 
+Some of the methods are multiprocessing methods, which make loading the data much faster. 
+"""
 imageSize = (256,256)
 def init(imageArray, len, str):
     buffered = np.frombuffer(imageArray, dtype = np.uint8)
@@ -43,7 +47,6 @@ def loadFileDiff(fileNum, file_path):
     imResized = cv2.resize(im, imageSize)
     imageList[fileNum] = imResized
 def loadDataMultiprocessing():
-   
     dir = "ArchitectureDataset/arcDataset"
     numProcesses = 4
     #gets a list of ALL files in one. 
@@ -75,18 +78,7 @@ def splitIntoFolders(imageTensor, lenFolders):
         subsetFolder = imageTensor[currentIndex:currentIndex + length, :]
         listFolders.append(subsetFolder)
     return listFolders
-"""
-def loadDatabyCategory():
-    dir = "ArchitectureDataset/arcDataset"
-    
-    listDirectories = [[x[0] + "/"+  file for file in x[2]] for x in os.walk(dir)][1:]
-    listFolders = []
-    for list in listDirectories:
 
-        listFolders.append(multiprocessingCalcList(list))
-        print("done one")
-    return listFolders
-"""
 def multiprocessingCalcList(list):
     """
     Multiprocessing per folder in the file. 

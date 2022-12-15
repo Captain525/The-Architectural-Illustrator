@@ -4,6 +4,8 @@ class displayImages(tf.keras.callbacks.Callback):
     """
     Callback designed to display the real images, the edge images, the generated images from teh edge images, 
     and the result of the patchGAN discriminator. 
+
+    THis is what we used to get the images shown in the report and on our poster. 
     
     """
     def __init__(self, trainData,trainEdges, testData, testEdges):
@@ -21,24 +23,21 @@ class displayImages(tf.keras.callbacks.Callback):
     def displayImages(self, batch, logs):
         print("in callback")
         numExamples = 5
-        trainImages = self.trainData[0:numExamples]
-        trainEdges = self.trainEdges[0:numExamples]
-        generatedTrainImages, genPredictions, realPredictions= self.model((trainImages, trainEdges), training = False)
-        #generatedTestImages, genTestPred, realTestpred = self.model((self.testData[0:5], self.testEdges[0:5]), training =False)
-        trainEdgesTiled = tf.tile(trainEdges, multiples = [1, 1, 1, 3])
-        stackedImages = tf.stack([trainImages, trainEdgesTiled, generatedTrainImages], axis=0)
+        testImages = self.testData[0:numExamples]
+        testEdges = self.testEdges[0:numExamples]
+        generatedTrainImages, genPredictions, realPredictions= self.model((testImages, testEdges), training = False)
+        trainEdgesTiled = tf.tile(testEdges, multiples = [1, 1, 1, 3])
+        stackedImages = tf.stack([testImages, trainEdgesTiled, generatedTrainImages], axis=0)
         assert(stackedImages.shape == (3, numExamples, 256,256, 3))
-        #print("image types: ", generatedTrainImages)
-        #print("max: ", tf.math.reduce_max(generatedTrainImages))
-        #print("min: ", tf.math.reduce_min(generatedTrainImages))
+        
         rows = numExamples
         columns = 5
         fig = plt.figure(figsize=(10, 10))
-        #print("start iteration")
+        
         for i in range(0, numExamples):
-            #print("on i: ", i)
+      
             for j in range(columns-2):
-                #print("on j ", j)
+           
                 index = i*columns + j + 1
                 fig.add_subplot(rows, columns, index)
                 plt.imshow(stackedImages[j, i, :], aspect = 'auto')  
@@ -50,12 +49,12 @@ class displayImages(tf.keras.callbacks.Callback):
                     predProbability = tf.reduce_mean(genPredictions[i])
 
            
-            #print("on j " , 3)
+        
             fig.add_subplot(rows,columns, i*columns + 4)
             plt.imshow(realPredictions[i], aspect = 'auto')
             plt.axis('off')
        
-            #print("on j ", 4)
+      
             fig.add_subplot(rows,columns, i*columns + 5)
             plt.imshow(genPredictions[i], aspect = 'auto')
             plt.axis('off')
